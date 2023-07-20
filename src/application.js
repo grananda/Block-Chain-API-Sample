@@ -6,10 +6,12 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import appRoutes from './routes/app.route.js';
 import networkRoutes from './routes/network.route.js';
+import { createHttpTerminator } from 'http-terminator';
 
 export class Application {
     constructor(port = null) {
         this.server = null;
+        this.httpTerminator = null;
         this.network = null;
         this.currentNode = null;
         this.ip = null;
@@ -42,6 +44,12 @@ export class Application {
             console.info(`Application started ast ${listener.address().port}...`);
         });
 
+        this.httpTerminator = createHttpTerminator({ server: listener });
+
         return this;
+    }
+
+    async stop() {
+        this.httpTerminator.terminate().then(console.info(`Application terminated at ${this.port}`));
     }
 }
