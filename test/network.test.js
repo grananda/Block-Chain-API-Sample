@@ -2,22 +2,23 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import supertest from 'supertest';
 import { fakerEN } from '@faker-js/faker';
 import { app } from '../index.js';
-import { Application } from '../src/application.js';
+import { ApplicationBootstrap } from '../src/application-bootstrap.js';
 
 describe('POST /', () => {
     let request;
     let server1;
-    const server1Port = 1000;
+    let server1Port;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         request = supertest.agent(app.server);
 
-        server1 = new Application(server1Port);
-        server1.init().configureServer().start();
+        server1Port = fakerEN.number.int({ min: 1000, max: 2000 });
+        server1 = ApplicationBootstrap.getInstance(server1Port).createNetwork().createServer().start();
     });
 
     afterEach(async () => {
         await server1.stop();
+        app.network.nodes = [];
     });
 
     it('should response with a 200 code when adding a new node to the network', async () => {

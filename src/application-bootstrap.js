@@ -8,7 +8,7 @@ import appRoutes from './routes/app.route.js';
 import networkRoutes from './routes/network.route.js';
 import { createHttpTerminator } from 'http-terminator';
 
-export class Application {
+export class ApplicationBootstrap {
     constructor(port = null) {
         this.server = null;
         this.httpTerminator = null;
@@ -18,9 +18,11 @@ export class Application {
         this.port = port;
     }
 
-    init() {
-        this.server = express();
+    static getInstance(port) {
+        return new ApplicationBootstrap(port);
+    }
 
+    createNetwork() {
         this.ip = ip.address();
         this.network = new Network();
         this.currentNode = new NetworkNode(uuidv4(), `${this.ip}:${this.port}`);
@@ -29,7 +31,9 @@ export class Application {
         return this;
     }
 
-    configureServer() {
+    createServer() {
+        this.server = express();
+
         this.server.use(bodyParser.json());
         this.server.use(bodyParser.urlencoded({ extended: false }));
 

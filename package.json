@@ -4,12 +4,15 @@
   "main": "index.js",
   "license": "MIT",
   "type": "module",
+  "engines": {
+    "node" : ">=16.0.0"
+  },
   "scripts": {
     "start-3001": "nodemon --watch src -e js index.js 3001",
     "start-3002": "nodemon --watch src -e js index.js 3002",
     "start-3003": "nodemon --watch src -e js index.js 3003",
     "start-old": "nodemon --watch src -e js src/networkNode.js 3001 http://127.0.0.1:3001",
-    "dev": "nodemon src/application.js",
+    "dev": "nodemon src/application-bootstrap.js",
     "test": "vitest --run --reporter verbose",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
