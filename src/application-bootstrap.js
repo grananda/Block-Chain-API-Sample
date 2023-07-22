@@ -6,7 +6,10 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import appRoutes from './routes/app.route.js';
 import networkRoutes from './routes/network.route.js';
+import blockChainRoutes from './routes/block-chain.route.js';
+import transactionRoutes from './routes/transaction.route.js';
 import { createHttpTerminator } from 'http-terminator';
+import { BlockChain } from './model/BlockChain.js';
 
 export class ApplicationBootstrap {
     constructor(port = null) {
@@ -14,6 +17,7 @@ export class ApplicationBootstrap {
         this.httpTerminator = null;
         this.network = null;
         this.currentNode = null;
+        this.blockChain = null;
         this.ip = null;
         this.port = port;
     }
@@ -31,6 +35,12 @@ export class ApplicationBootstrap {
         return this;
     }
 
+    createBlockChain() {
+        this.blockChain = new BlockChain();
+
+        return this;
+    }
+
     createServer() {
         this.server = express();
 
@@ -39,6 +49,8 @@ export class ApplicationBootstrap {
 
         this.server.use('/', appRoutes);
         this.server.use('/network', networkRoutes);
+        this.server.use('/block-chain', blockChainRoutes);
+        this.server.use('/transaction', transactionRoutes);
 
         return this;
     }

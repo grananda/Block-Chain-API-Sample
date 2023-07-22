@@ -4,6 +4,7 @@ export function BlockChain(chain = [], pendingTransactions = []) {
 }
 
 BlockChain.prototype.addBlock = function (block) {
+    this.pendingTransactions = [];
     return this.chain.push(block);
 };
 
