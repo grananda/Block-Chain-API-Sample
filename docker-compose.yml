@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  multiples-api:
+    container_name: block-chain-test
+    image: block-chain-test:test
+    build: .
+    restart: on-failure
+    ports:
+      - "3000:3000"

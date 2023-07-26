@@ -10,6 +10,8 @@ import blockChainRoutes from './routes/block-chain.route.js';
 import transactionRoutes from './routes/transaction.route.js';
 import { createHttpTerminator } from 'http-terminator';
 import { BlockChain } from './model/BlockChain.js';
+import { Block } from './model/Block.js';
+import { config } from './ config/config.js';
 
 export class ApplicationBootstrap {
     constructor(port = null) {
@@ -26,10 +28,10 @@ export class ApplicationBootstrap {
         return new ApplicationBootstrap(port);
     }
 
-    createNetwork() {
-        this.ip = ip.address();
+    createNetwork(currentNode = null) {
+        this.ip = config.IP ? config.IP : ip.address();
         this.network = new Network();
-        this.currentNode = new NetworkNode(uuidv4(), `${this.ip}:${this.port}`);
+        this.currentNode = currentNode ? currentNode : new NetworkNode(uuidv4(), `${this.ip}:${this.port}`);
         this.network.currentNode = this.currentNode;
 
         return this;
@@ -37,6 +39,9 @@ export class ApplicationBootstrap {
 
     createBlockChain() {
         this.blockChain = new BlockChain();
+        const genesisBlock = new Block();
+
+        this.blockChain.chain.push(genesisBlock);
 
         return this;
     }
@@ -57,7 +62,7 @@ export class ApplicationBootstrap {
 
     start() {
         const listener = this.server.listen(this.port, function () {
-            console.info(`Application started ast ${listener.address().port}...`);
+            console.info(`Application started at ${listener.address().port}...`);
         });
 
         this.httpTerminator = createHttpTerminator({ server: listener });

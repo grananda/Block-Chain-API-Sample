@@ -4,14 +4,19 @@ import { app } from '../../index.js';
 
 export default class NetworkController {
     get(req, res) {
-        res.json(app.network);
+        res.json({
+            currentNode: app.network.currentNode,
+            nodes: app.network.nodes.sort(it => it.networkNodeUrl),
+        });
     }
 
     broadcast(req, res) {
         const node = new NetworkNode(req.body.networkNodeId, req.body.networkNodeUrl);
 
         if (app.network.addNode(node)) {
-            console.log(`Node ${node.networkNodeId} registered successfully.`);
+            console.info(
+                `POST /network/broadcast: Node ${node.networkNodeId}:${node.networkNodeUrl} registered successfully in host node.`
+            );
         }
 
         const responsePromises = [];
@@ -31,7 +36,10 @@ export default class NetworkController {
                 });
             })
             .then(() => {
-                res.json(app.network);
+                res.json({
+                    currentNode: app.network.currentNode,
+                    nodes: app.network.nodes.sort(it => it.networkNodeUrl),
+                });
             });
     }
 
@@ -39,10 +47,15 @@ export default class NetworkController {
         const node = new NetworkNode(req.body.networkNodeId, req.body.networkNodeUrl);
 
         if (app.network.addNode(node)) {
-            console.log(`Node ${node.networkNodeId} registered successfully.`);
+            console.info(
+                `POST /network/node: Node ${node.networkNodeId}:${node.networkNodeUrl} registered successfully at ${app.currentNode.networkNodeUrl}.`
+            );
         }
 
-        res.json(app.network);
+        res.json({
+            currentNode: app.network.currentNode,
+            nodes: app.network.nodes.sort(it => it.networkNodeUrl),
+        });
     }
 
     bulk(req, res) {
@@ -52,10 +65,15 @@ export default class NetworkController {
             const node = new NetworkNode(it.networkNodeId, it.networkNodeUrl);
 
             if (app.network.addNode(node)) {
-                console.log(`Node ${node.networkNodeId} registered successfully.`);
+                console.log(
+                    `POST /network/node/bulk: Node ${node.networkNodeId}:${node.networkNodeUrl} registered successfully at ${app.currentNode.networkNodeUrl}.`
+                );
             }
         });
 
-        res.json(app.network);
+        res.json({
+            currentNode: app.network.currentNode,
+            nodes: app.network.nodes.sort(it => it.networkNodeUrl),
+        });
     }
 }
