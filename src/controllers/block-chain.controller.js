@@ -18,60 +18,68 @@ export default class BlockChainController {
     mine(req, res) {
         const lastBlock = app.blockChain.getLastBlock();
         const previousBlockHash = lastBlock.hash;
+        const pendingTransactions = app.blockChain.pendingTransactions;
+        const nextBlockIndex = lastBlock['index'] + 1;
         const currentBlockData = {
-            index: lastBlock['index'] + 1,
-            transactions: app.blockChain.pendingTransactions,
+            index: nextBlockIndex,
+            transactions: pendingTransactions,
         };
 
         const nonce = lastBlock.proofOfWork(previousBlockHash, currentBlockData);
         const blockHash = lastBlock.hashBlock(previousBlockHash, currentBlockData, nonce);
 
-        const block = new Block(lastBlock['index'] + 1, nonce, previousBlockHash, blockHash, currentBlockData);
+        const block = new Block(nextBlockIndex, nonce, previousBlockHash, blockHash, pendingTransactions);
 
-        const newBlock = app.blockChain.addBlock(block);
+        app.blockChain.addBlock(block);
 
         const regNodesPromises = [];
-        app.network.nodes.forEach(node => {
-            regNodesPromises.push(axios.post(`${node.networkNodeUrl}/receive-new-block`, { newBlock: newBlock }));
+        app.network.nodes.forEach(it => {
+            regNodesPromises.push(
+                axios.post(`http://${it.networkNodeUrl}/block-chain/receive-new-block`, { newBlock: block })
+            );
         });
 
-        res.json(newBlock);
+        Promise.all(regNodesPromises).then(() => {
+            res.json(block);
+        });
     }
 
     receiveNewBlock(req, res) {
         const newBlock = req.body.newBlock;
         const lastBlock = app.blockChain.getLastBlock();
 
-        const isHashConsistent = lastBlock.hash === newBlock.previousBlockHash;
+        const isHashConsistent = lastBlock.hash === newBlock.parentHash;
         const isBlockIndexConsistent = lastBlock['index'] + 1 === newBlock['index'];
 
-        if (isHashConsistent && isBlockIndexConsistent) {
+        if (!isHashConsistent) {
+            res.json({ error: `Block ${newBlock['index']} rejected: Parent block hash does not match` });
+        } else if (!isBlockIndexConsistent) {
+            res.json({ error: `Block ${newBlock['index']} rejected: Parent block index sequence does not match` });
+        } else {
             app.blockChain.addBlock(newBlock);
 
             res.json(newBlock);
-        } else {
-            res.json({ error: `Block ${newBlock['index']} rejected.` });
         }
     }
 
     consensus(req, res) {
         const requestPromises = [];
-        app.blockChain.network.nodes.forEach(node => {
-            requestPromises.push(axios.get(`${node.networkNodeUrl}/blockchain`));
+        app.network.nodes.forEach(node => {
+            requestPromises.push(axios.get(`http://${node.networkNodeUrl}/block-chain`));
         });
 
-        Promise.all(requestPromises).then(blockChains => {
+        Promise.all(requestPromises).then(response => {
             const currentChainLength = app.blockChain.chain.length;
 
             let maxChainLength = currentChainLength;
             let newLongestChain = null;
             let newPendingTransactions = [];
 
-            blockChains.forEach(blockChain => {
-                if (blockChain.chain.length > maxChainLength) {
-                    maxChainLength = blockChain.chain.length;
-                    newLongestChain = blockChain.chain;
-                    newPendingTransactions = blockChain.pendingTransactions;
+            response.forEach(blockChain => {
+                if (blockChain.data.chain.length > maxChainLength) {
+                    maxChainLength = blockChain.data.chain.length;
+                    newLongestChain = blockChain.data.chain;
+                    newPendingTransactions = blockChain.data.pendingTransactions;
                 }
             });
 

@@ -6,8 +6,8 @@ const controller = new BlockChainController();
 
 router.get('/', controller.get);
 router.get('/mine', controller.mine);
-router.post('/receive-new-block', controller.receiveNewBlock);
 router.get('/consensus', controller.consensus);
 router.get('/block/:blockHash', controller.findBlockByHash);
+router.post('/receive-new-block', controller.receiveNewBlock);
 
 export default router;

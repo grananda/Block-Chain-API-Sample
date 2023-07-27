@@ -305,7 +305,7 @@ describe('Blockchain', () => {
             const res = chain.findTransactionsByAddress(data1.sender);
 
             // Assert
-            expect(res).toEqual({ transactions: [data1, data2] });
+            expect(res).toEqual([data1, data2]);
         });
     });
 });

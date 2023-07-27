@@ -50,7 +50,7 @@ BlockChain.prototype.validateChain = function () {
     const correctNonce = genesisBlock.nonce === 0;
     const correctPreviousHash = genesisBlock.parentHash === '0000';
     const correctHash = genesisBlock.hash === '0000';
-    const correctTransaction = genesisBlock.transactions.length === 0;
+    const correctTransaction = genesisBlock.transactions === null;
 
     if (!correctNonce || !correctPreviousHash || !correctHash || !correctTransaction) {
         validChain = false;
@@ -81,9 +81,7 @@ BlockChain.prototype.findTransactionById = function (transactionId) {
 };
 
 BlockChain.prototype.findTransactionsByAddress = function (address) {
-    const transactions = this.chain
+    return this.chain
         .flatMap(block => block.transactions)
         .filter(transaction => transaction.sender === address || transaction.recipient === address);
-
-    return { transactions: transactions };
 };
