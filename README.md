@@ -1,6 +1,6 @@
-# Pool Chain
+# Block Chain API Sample
 
-Pool-Chain is a blockchain based distributed pooling system.
+Block Chain API Sample is a boilerplate blockchain API system for beginners.
 
 ## Development install instruction
 
