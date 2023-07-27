@@ -1,35 +1,28 @@
 import { app } from '../../index.js';
 import { BlockData } from '../model/BlockData.js';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
 export default class TransactionController {
     post(req, res) {
-        const transaction = req.body;
+        const transactionData = req.body;
+
+        const transaction = new BlockData(
+            transactionData.id,
+            null,
+            transactionData.sender,
+            transactionData.recipient,
+            transactionData.data,
+            transactionData.timestamp
+        );
 
         const blockIndex = app.blockChain.attachToPendingTransactions(transaction);
 
         res.send({ transactionsLength: blockIndex });
     }
 
-    broadcast(req, res) {
-        const transaction = new BlockData(
-            uuid.v4().split('-').join(''),
-            null,
-            req.body.sender,
-            req.body.recipient,
-            req.body.data
-        );
-        const blockIndex = app.blockChain.attachToPendingTransactions(transaction);
-
-        const regNodesPromises = [];
-        app.network.nodes.forEach(node => {
-            regNodesPromises.push(axios.post(`${node.networkNodeUrl}/transaction`, { transaction }));
-        });
-
-        Promise.all(regNodesPromises).then(() => {
-            res.json({ blockIndex: blockIndex, pendingTransactions: app.blockChain.pendingTransactions });
-        });
+    getPendingTransactions(req, res) {
+        res.json(app.blockChain.pendingTransactions);
     }
 
     get(req, res) {
@@ -45,6 +38,36 @@ export default class TransactionController {
 
         const addressDate = app.blockChain.findTransactionsByAddress(address);
 
-        res.json({ addressDate: addressDate });
+        res.json(addressDate);
+    }
+
+    broadcast(req, res) {
+        const transaction = new BlockData(
+            uuidv4().split('-').join(''),
+            null,
+            req.body.sender,
+            req.body.recipient,
+            req.body.data
+        );
+        const blockIndex = app.blockChain.attachToPendingTransactions(transaction);
+
+        const regNodesPromises = [];
+        app.network.nodes.forEach(node => {
+            if (node.networkNodeId !== app.network.currentNode.id) {
+                regNodesPromises.push(
+                    axios.post(`http://${node.networkNodeUrl}/transaction`, {
+                        id: transaction.id,
+                        sender: transaction.sender,
+                        recipient: transaction.recipient,
+                        data: transaction.data,
+                        timestamp: transaction.timestamp,
+                    })
+                );
+            }
+        });
+
+        Promise.all(regNodesPromises).then(() => {
+            res.json({ blockIndex: blockIndex, pendingTransactions: app.blockChain.pendingTransactions });
+        });
     }
 }
