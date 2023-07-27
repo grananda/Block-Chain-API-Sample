@@ -3,7 +3,7 @@ import sha256 from 'sha256';
 export const PROOF_OF_WORK_COMPLEXITY = 4;
 export const PROOF_OF_WORK_CHARACTER = '0';
 
-export function Block(index = 0, nonce = 0, parentHash = '0000', hash = '0000', transactions = []) {
+export function Block(index = 0, nonce = 0, parentHash = '0000', hash = '0000', transactions = null) {
     this.index = index;
     this.timestamp = Date.now();
     this.nonce = nonce;

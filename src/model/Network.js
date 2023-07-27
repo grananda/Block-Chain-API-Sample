@@ -6,7 +6,10 @@ export function Network(currentNode = null, nodes = []) {
 }
 
 Network.prototype.addNode = function (node) {
-    if (this.nodes.indexOf(node) === -1 && this.currentNode !== node) {
+    if (
+        this.nodes.findIndex(it => it.networkNodeUrl === node.networkNodeUrl) === -1 &&
+        this.currentNode?.networkNodeUrl !== node.networkNodeUrl
+    ) {
         this.nodes.push(node);
 
         return true;
