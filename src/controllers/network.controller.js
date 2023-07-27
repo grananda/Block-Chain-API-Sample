@@ -4,10 +4,7 @@ import { app } from '../../index.js';
 
 export default class NetworkController {
     get(req, res) {
-        res.json({
-            currentNode: app.network.currentNode,
-            nodes: app.network.nodes.sort(it => it.networkNodeUrl),
-        });
+        res.json(app.network);
     }
 
     broadcast(req, res) {
@@ -36,10 +33,7 @@ export default class NetworkController {
                 });
             })
             .then(() => {
-                res.json({
-                    currentNode: app.network.currentNode,
-                    nodes: app.network.nodes.sort(it => it.networkNodeUrl),
-                });
+                res.json(app.network);
             });
     }
 
@@ -52,10 +46,7 @@ export default class NetworkController {
             );
         }
 
-        res.json({
-            currentNode: app.network.currentNode,
-            nodes: app.network.nodes.sort(it => it.networkNodeUrl),
-        });
+        res.json(app.network);
     }
 
     bulk(req, res) {
@@ -71,9 +62,6 @@ export default class NetworkController {
             }
         });
 
-        res.json({
-            currentNode: app.network.currentNode,
-            nodes: app.network.nodes.sort(it => it.networkNodeUrl),
-        });
+        res.json(app.network);
     }
 }
